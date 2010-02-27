@@ -5,6 +5,7 @@
 #include <string.h>
 #include <plplot/plplot.h>
 #include <fftw3.h>
+#include <math.h>
 
 int main(int argc, char **argv)
 {
@@ -44,10 +45,10 @@ int main(int argc, char **argv)
 	printf("sections: %d\n", info.sections);
 	printf("seekable: %d\n", info.seekable);
 
-	plsdev("xwin");
-	plinit();
+//	plsdev("xwin");
+//	plinit();
 
-	plenv(0.0f, 0.3f, INT_MIN, INT_MAX, 0, 0);
+//	plenv(0.0f, 0.3f, INT_MIN, INT_MAX, 0, 0);
 
 	input = malloc(sizeof(int) * info.channels);
 	if (!input) {
@@ -92,9 +93,33 @@ int main(int argc, char **argv)
 
 
 		x = input[0];
-		plpoin(1, &time, &x, 1);
+		in[i] = x;
+//		plpoin(1, &time, &x, 1);
 	}
 
+//	plend();
+
+	plsdev("xwin");
+	plinit();
+	plenv(0.0f, ((float)samples / 2) + 1, 0, INT_MAX / 3, 0, 0);
+	fftw_execute(p);
+
+	for (i = 0; i < samples; i++) {
+		double magnitude;
+		double *d;
+		PLFLT x = i;
+		PLFLT y;
+
+		d = out[i];
+		magnitude = hypot(d[0] / 1000.0f, d[1] / 1000.0f);
+		if (magnitude == 0)
+			continue;
+		printf("d[0]=%f, d[1]=%f, magnitude=%f\n", d[0], d[1], magnitude);
+		y = magnitude;
+		plpoin(1, &x, &y, 1);
+	}
+
+	plend();
 	total_mean /= info.frames;
 
 	printf("Min: %f\n", min);
@@ -104,7 +129,9 @@ int main(int argc, char **argv)
 	printf("Total mean: %f\n", total_mean);
 	printf("Thresh: %f\n", thresh);
 
-	plend();
+	fftw_destroy_plan(p);
+	fftw_free(in);
+	fftw_free(out);
 	free(input);
 	sf_close(file);
 
