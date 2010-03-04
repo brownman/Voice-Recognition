@@ -35,6 +35,7 @@ int main(int argc, char **argv)
 	int num;
 	int fsamples = 0;
 	int sample;
+	double ymin = 0, ymax = 0, xmin = 0, xmax = 0;
 
 	memset(&info, 0, sizeof(SF_INFO));
 	memset(&f, 0, sizeof(struct frequency) * 100);
@@ -57,10 +58,10 @@ int main(int argc, char **argv)
 	printf("sections: %d\n", info.sections);
 	printf("seekable: %d\n", info.seekable);
 
-//	plsdev("xwin");
-//	plinit();
+	plsdev("xwin");
+	plinit();
 
-//	plenv(0.0f, seconds, -1, 1, 0, 0);
+	plenv(0.0f, seconds, -1, 1, 0, 0);
 
 	input = malloc(sizeof(int) * info.channels);
 	if (!input) {
@@ -111,35 +112,43 @@ int main(int argc, char **argv)
 //		plpoin(1, &time, &x, 1);
 	}
 
-//	plend();
 
 	for (i = 0; i < samples; i++) {
+		PLFLT time = (float)i / (float)info.samplerate;
+		PLFLT x;
 		if (in[i] > 0)
 			in[i] /= max;
 		else if (in[i] < 0)
 			in[i] /= (-min);
+		x = in[i];
+		plpoin(1, &time, &x, 1);
 	}
 
-	plsdev("xwin");
-	plinit();
-	plenv(0.0f, ((float)samples / 2) + 1, 0, 200, 0, 0);
+	plend();
 	fftw_execute(p);
 
 	num = 0;
 	for (i = 0; i < samples; i++) {
 		double magnitude;
 		double *d;
-		PLFLT x = i;
+		PLFLT x;
 		PLFLT y;
 
 		d = out[i];
 		magnitude = hypot(d[0], d[1]);
-
+		x = d[0];
 		if (magnitude < 10) {
 			num++;
 			continue;
 		}
-
+		if (d[0] > xmax)
+			xmax = d[0];
+		if (d[0] < xmin)
+			xmin = d[0];
+		if (d[1] > ymax)
+			ymax = d[1];
+		if (d[1] < ymin)
+			ymin = d[1];
 		if (magnitude < current && num > 100) {
 			f[num_frequencies].magnitude = current;
 			f[num_frequencies].sample = sample;
@@ -165,10 +174,23 @@ int main(int argc, char **argv)
 */
 //		printf("current=%f, last=%f, magnitude=%f\n", current, last, magnitude);
 //		printf("d[0]=%f, d[1]=%f, magnitude=%f\n", d[0], d[1], magnitude);
-		y = magnitude;
-		plpoin(1, &x, &y, 1);
+		y = d[1];
+//		plpoin(1, &x, &y, 1);
 	}
 
+	plsdev("xwin");
+	plinit();
+	plenv(xmin, xmax, ymin, ymax, 0, 0);
+	for (i = 0; i < samples; i++) {
+		PLFLT x;
+		PLFLT y;
+		double *d;
+
+		d = out[i];
+		x = d[0];
+		y = d[1];
+		plpoin(1, &x, &y, 1);
+	}
 	plend();
 	total_mean /= info.frames;
 
