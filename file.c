@@ -180,15 +180,15 @@ int main(int argc, char **argv)
 
 	plsdev("xwin");
 	plinit();
-	plenv(xmin, xmax, ymin, ymax, 0, 0);
+	plenv(0, samples, xmin, xmax, 0, 0);
 	for (i = 0; i < samples; i++) {
 		PLFLT x;
 		PLFLT y;
 		double *d;
 
 		d = out[i];
-		x = d[0];
-		y = d[1];
+		x = i;
+		y = d[0];
 		plpoin(1, &x, &y, 1);
 	}
 	plend();
