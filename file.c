@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 	samples = end - start;
 	in = (double *)fftw_malloc(sizeof(double) * samples);
 	out = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * samples);
-	p = fftw_plan_dft_r2c_1d(samples, in, out, FFTW_PRESERVE_INPUT);
+//	p = fftw_plan_dft_r2c_1d(samples, in, out, FFTW_PRESERVE_INPUT);
 
 	printf("start is %f, end is %f\n", start, end);
 
@@ -125,8 +125,8 @@ int main(int argc, char **argv)
 	}
 
 	plend();
+/*
 	fftw_execute(p);
-
 	num = 0;
 	for (i = 0; i < samples; i++) {
 		double magnitude;
@@ -171,7 +171,7 @@ int main(int argc, char **argv)
 			current = last;
 		}
 		last = magnitude;
-*/
+//
 //		printf("current=%f, last=%f, magnitude=%f\n", current, last, magnitude);
 //		printf("d[0]=%f, d[1]=%f, magnitude=%f\n", d[0], d[1], magnitude);
 		y = d[1];
@@ -197,7 +197,7 @@ int main(int argc, char **argv)
 	for (i = 0; i < num_frequencies; i++)
 		printf("Peak %d: magnitude=%f, sample=%d\n",
 		       i, f[i].magnitude, f[i].sample);
-
+*/
 	printf("Num frequencies: %d\n", num_frequencies);
 	printf("Min: %f\n", min);
 	printf("Max: %f\n", max);
@@ -206,7 +206,7 @@ int main(int argc, char **argv)
 	printf("Total mean: %f\n", total_mean);
 	printf("Thresh: %f\n", thresh);
 
-	fftw_destroy_plan(p);
+//	fftw_destroy_plan(p);
 	fftw_free(in);
 	fftw_free(out);
 	free(input);
